@@ -17,9 +17,9 @@ public class MovingObjectsPanel extends JPanel implements ActionListener {
 
     public MovingObjectsPanel() {
         // Set initial positions, deltas, and radii for the circles
-        scissors = new MovingObject(120, 50, 5,  imageScissors);
-        paper = new MovingObject(350, 10, 5,  imagePaper);
-        rock = new MovingObject(240, 240, 5, imageRock);
+        scissors = new MovingObject(0, 70, 2,  imageScissors);
+        paper = new MovingObject(350, 10, 2,  imagePaper);
+        rock = new MovingObject(50, 120, 2, imageRock);
 
         // Start a timer to update the animation
         javax.swing.Timer timer = new javax.swing.Timer(10, this);
@@ -52,54 +52,32 @@ public class MovingObjectsPanel extends JPanel implements ActionListener {
 
         // Check for collisions between circles
         try {
-            if (CollisionChecker.isColliding(scissors, rock)) {
+            if (scissors.isColliding(rock)) {
                 scissors.reverseDirection();
                 rock.reverseDirection();
             }
 
-            if (CollisionChecker.isColliding(scissors, paper)) {
+            if (scissors.isColliding(paper)) {
                 scissors.reverseDirection();
                 paper.reverseDirection();
             }
 
-            if (CollisionChecker.isColliding(rock, paper)) {
+            if (rock.isColliding(paper)) {
                 rock.reverseDirection();
                 paper.reverseDirection();
             }
+            System.out.println(scissors.isColliding(rock));
+            System.out.println(scissors.isColliding(paper));
+            System.out.println(paper.isColliding(rock));
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
 
         // Reverse direction if circles reach the edges
-        if (scissors.getCoordinateX() <= 0 || scissors.getCoordinateX() >= getWidth()
-        || scissors.getCoordinateY() <= 0 || scissors.getCoordinateY() >= getHeight()) {
-            scissors.reverseDirection();
-            // Checking not crossing edges.
-            if (scissors.getCoordinateX() <= 0 || scissors.getCoordinateX() >= getWidth()
-                    || scissors.getCoordinateY() <= 0 || scissors.getCoordinateY() >= getHeight()){
-                scissors.move();
-            }
-        }
-        if (rock.getCoordinateX() <= 0 || rock.getCoordinateX() >= getWidth()
-        || rock.getCoordinateY() <= 0 || rock.getCoordinateY() >= getHeight()) {
-            rock.reverseDirection();
-            if (rock.getCoordinateX() <= 0 || rock.getCoordinateX() >= getWidth()
-                    || rock.getCoordinateY() <= 0 || rock.getCoordinateY() >= getHeight()) {
-                rock.move();
-            }
-        }
-        if (paper.getCoordinateX() <= 0 || paper.getCoordinateX() >= getWidth()
-        || paper.getCoordinateY() <= 0 || paper.getCoordinateY() >= getHeight()) {
-            paper.reverseDirection();
-            if (paper.getCoordinateX() <= 0 || paper.getCoordinateX() >= getWidth()
-                    || paper.getCoordinateY() <= 0 || paper.getCoordinateY() >= getHeight()) {
-                paper.move();
-            }
-        }
+        scissors.checkBorders(this);
+        rock.checkBorders(this);
+        paper.checkBorders(this);
 
-        System.out.println("Kamen coord: x:" + rock.getCoordinateX() + ", y: " + rock.getCoordinateY());
-        System.out.println("Nuzky coord: x:" + scissors.getCoordinateX() + ", y: " + scissors.getCoordinateY());
-        System.out.println("Papir coord: x:" + paper.getCoordinateX() + ", y: " + paper.getCoordinateY());
         // Repaint the panel to update the animation
         repaint();
     }
