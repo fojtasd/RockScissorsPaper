@@ -74,14 +74,27 @@ public class MovingObjectsPanel extends JPanel implements ActionListener {
         if (scissors.getCoordinateX() <= 0 || scissors.getCoordinateX() >= getWidth()
         || scissors.getCoordinateY() <= 0 || scissors.getCoordinateY() >= getHeight()) {
             scissors.reverseDirection();
+            // Checking not crossing edges.
+            if (scissors.getCoordinateX() <= 0 || scissors.getCoordinateX() >= getWidth()
+                    || scissors.getCoordinateY() <= 0 || scissors.getCoordinateY() >= getHeight()){
+                scissors.move();
+            }
         }
         if (rock.getCoordinateX() <= 0 || rock.getCoordinateX() >= getWidth()
         || rock.getCoordinateY() <= 0 || rock.getCoordinateY() >= getHeight()) {
             rock.reverseDirection();
+            if (rock.getCoordinateX() <= 0 || rock.getCoordinateX() >= getWidth()
+                    || rock.getCoordinateY() <= 0 || rock.getCoordinateY() >= getHeight()) {
+                rock.move();
+            }
         }
         if (paper.getCoordinateX() <= 0 || paper.getCoordinateX() >= getWidth()
         || paper.getCoordinateY() <= 0 || paper.getCoordinateY() >= getHeight()) {
             paper.reverseDirection();
+            if (paper.getCoordinateX() <= 0 || paper.getCoordinateX() >= getWidth()
+                    || paper.getCoordinateY() <= 0 || paper.getCoordinateY() >= getHeight()) {
+                paper.move();
+            }
         }
 
         System.out.println("Kamen coord: x:" + rock.getCoordinateX() + ", y: " + rock.getCoordinateY());
