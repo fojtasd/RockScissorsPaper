@@ -1,24 +1,119 @@
 import java.awt.*;
+import java.sql.SQLOutput;
 
 public class MovingObject {
     private int coordinateX;
     private int coordinateY;
     public final int IMAGE_HEIGHT = 30;
-    public final int IMAGE_WIDTH = 30;
-    public int velocity;
+    public final int IMAGE_WIDTH = 40;
+    public double velocityX;
+    public double velocityY;
+    public MovingObjectsPanel movingObjectsPanel;
     Image image;
+    Type typeOfObject;
     Boundaries boundaries;
 
-    public MovingObject(int x1, int y1, int velocity, Image image) {
-        this.coordinateX = x1;
-        this.coordinateY = y1;
-        this.velocity = velocity;
-        this.image = image;
-        this.boundaries = new Boundaries(this);
+    static MovingObject[] movingObjects = new MovingObject[10];
+    static int counterOfObjectsInArray = 0;
+
+    enum Type{
+        scissors,
+        rock,
+        paper
     }
 
-    void reverseDirection(){
-        this.velocity = this.velocity * (-1);
+    public MovingObject(int x1, int y1, double velocity, String imageAddress, MovingObjectsPanel movingObjectsPanel) {
+        this.coordinateX = x1;
+        this.coordinateY = y1;
+        this.velocityX = velocity;
+        this.velocityY = -velocity;
+        this.image = Toolkit.getDefaultToolkit().getImage(imageAddress);
+        this.boundaries = new Boundaries(this);
+        this.movingObjectsPanel = movingObjectsPanel;
+        movingObjects[counterOfObjectsInArray] = this;
+        counterOfObjectsInArray++;
+
+        String substring = imageAddress.substring(7);
+        switch (substring) {
+            case "scissors" -> typeOfObject = Type.scissors;
+            case "rock" -> typeOfObject = Type.rock;
+            case "paper" -> typeOfObject = Type.paper;
+        }
+
+    }
+
+    void updateObjectPosition(){
+        coordinateX += velocityX;
+        coordinateY += velocityY;
+        for (int i = 0; i < this.boundaries.allCoordinatesOfCorners.length; i++){
+            this.boundaries.allCoordinatesOfCorners[i] += (int)this.velocityX;
+        }
+
+        if (coordinateX + IMAGE_WIDTH >= movingObjectsPanel.getWidth() || coordinateX <= 0) {
+            velocityX = -velocityX; // Reverse x-direction velocity if the square hits the horizontal edges
+        }
+
+        if (coordinateY + IMAGE_HEIGHT >= movingObjectsPanel.getHeight() || coordinateY <= 0) {
+            velocityY = -velocityY; // Reverse y-direction velocity if the square hits the vertical edges
+        }
+    }
+
+    public static void checkCollision() {
+        for(int i = 0; i < movingObjects.length; i++){
+            if(movingObjects[i] == null){
+                break;
+            }
+            for(int j = 0; j < movingObjects.length; j++){
+                if(i == j){
+                    break;
+                }
+                if (movingObjects[i].coordinateX + movingObjects[i].IMAGE_WIDTH >= movingObjects[j].coordinateX
+                        && movingObjects[i].coordinateX <= movingObjects[j].coordinateX + movingObjects[j].IMAGE_WIDTH
+                        && movingObjects[i].coordinateY + movingObjects[i].IMAGE_HEIGHT >= movingObjects[j].coordinateY
+                        && movingObjects[i].coordinateY <= movingObjects[j].coordinateY + movingObjects[j].IMAGE_HEIGHT) {
+                    // same signs of vectors
+                    if ((movingObjects[i].velocityX > 0 && movingObjects[j].velocityX > 0 && movingObjects[i].velocityY > 0 && movingObjects[j].velocityY > 0)
+                            || (movingObjects[i].velocityX < 0 && movingObjects[j].velocityX < 0 && movingObjects[i].velocityY < 0 && movingObjects[j].velocityY < 0)){
+                        double temp = movingObjects[i].velocityX;
+                        movingObjects[i].velocityX = movingObjects[j].velocityX;
+                        movingObjects[j].velocityX = temp;
+
+                        temp = movingObjects[i].velocityY;
+                        movingObjects[i].velocityY = movingObjects[j].velocityY;
+                        movingObjects[j].velocityY = temp;
+                    }
+                    // different signs of vector
+                    else if ((movingObjects[i].velocityX < 0 && movingObjects[j].velocityX < 0 && movingObjects[i].velocityY > 0 && movingObjects[j].velocityY > 0)
+                            || (movingObjects[i].velocityX > 0 && movingObjects[j].velocityX > 0 && movingObjects[i].velocityY < 0 && movingObjects[j].velocityY < 0)){
+                        double temp = movingObjects[i].velocityX;
+                        movingObjects[i].velocityX = movingObjects[j].velocityX;
+                        movingObjects[j].velocityX = temp;
+
+                        temp = movingObjects[i].velocityY;
+                        movingObjects[i].velocityY = movingObjects[j].velocityY;
+                        movingObjects[j].velocityY = temp;
+                    }
+                    else {
+                        movingObjects[i].velocityX = -movingObjects[i].velocityX;
+                        movingObjects[i].velocityY = -movingObjects[i].velocityY;
+                        movingObjects[i].coordinateX += movingObjects[i].velocityX;
+                        movingObjects[i].coordinateY += movingObjects[i].velocityY;
+                        movingObjects[j].velocityX = -movingObjects[j].velocityX;
+                        movingObjects[j].velocityY = -movingObjects[j].velocityY;
+                        movingObjects[j].coordinateX += movingObjects[j].velocityX;
+                        movingObjects[j].coordinateY += movingObjects[j].velocityY;
+                    }
+
+                    //change image and type
+                    if(movingObjects[i].typeOfObject != movingObjects[j].typeOfObject){
+                        if (movingObjects[i].typeOfObject == Type.scissors && movingObjects[j].typeOfObject == Type.paper){
+
+                        }
+                    }
+                }
+            }
+
+        }
     }
 
     public int getCoordinateX(){
@@ -30,22 +125,10 @@ public class MovingObject {
     }
 
     public void move(){
-        this.coordinateX += this.velocity;
-        this.coordinateY += this.velocity;
+        this.coordinateX += this.velocityX;
+        this.coordinateY += this.velocityY;
         for (int i = 0; i < this.boundaries.allCoordinatesOfCorners.length; i++){
-            this.boundaries.allCoordinatesOfCorners[i] = this.boundaries.allCoordinatesOfCorners[i] + this.velocity;
-        }
-    }
-
-    public void checkBorders(MovingObjectsPanel movingObjectsPanel){
-        if (this.getCoordinateX() <= 0 || this.getCoordinateX() + this.IMAGE_WIDTH >= movingObjectsPanel.getWidth()
-                || this.getCoordinateY() <= 0 || this.getCoordinateY() + this.IMAGE_HEIGHT >= movingObjectsPanel.getHeight()) {
-            this.reverseDirection();
-            // Checking if not crossing edges.
-            if (this.getCoordinateX() <= 0 || this.getCoordinateX() + IMAGE_WIDTH >= movingObjectsPanel.getWidth()
-                    || this.getCoordinateY() <= 0 || this.getCoordinateY() + IMAGE_HEIGHT >= movingObjectsPanel.getHeight()){
-                this.move();
-            }
+            this.boundaries.allCoordinatesOfCorners[i] += (int)this.velocityX;
         }
     }
 
