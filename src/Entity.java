@@ -4,7 +4,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 
-public class MovingObject {
+public class Entity {
     private int coordinateX;
     private int coordinateY;
     private final int IMAGE_HEIGHT;
@@ -16,24 +16,22 @@ public class MovingObject {
     /**
      * Contains every created object of this class. It is necessary for controlling collisions.
      */
-    static MovingObject[] movingObjects = new MovingObject[10];
+    static Entity[] entities = new Entity[200];
     Image image;
     Type typeOfObject;
     Boundaries boundaries;
-
     static int counterOfObjectsInArray = 0;
-
-    public MovingObject(int x1, int y1, double velocity, Type type, MovingObjectsPanel movingObjectsPanel) throws Exception {
-        this.coordinateX = x1;
-        this.coordinateY = y1;
+    public Entity(int x, int y, double velocity, Type type, MovingObjectsPanel movingObjectsPanel) throws Exception {
+        this.coordinateX = x;
+        this.coordinateY = y;
         this.velocityX = velocity;
         this.velocityY = -velocity;
+        this.typeOfObject = type;
         this.image = Toolkit.getDefaultToolkit().getImage(type.getValue());
         this.boundaries = new Boundaries(this);
         this.movingObjectsPanel = movingObjectsPanel;
-        movingObjects[counterOfObjectsInArray] = this;
+        entities[counterOfObjectsInArray] = this;
         counterOfObjectsInArray++;
-        this.typeOfObject = type;
 
         File imageFile = new File(type.getValue());
         try {
@@ -62,59 +60,59 @@ public class MovingObject {
     }
 
     static void checkCollision() {
-        for (int i = 0; i < movingObjects.length; i++) {
-            if (movingObjects[i] == null) {
+        for (int i = 0; i < entities.length; i++) {
+            if (entities[i] == null) {
                 break;
             }
 
-            for (int j = 0; j < movingObjects.length; j++) {
+            for (int j = 0; j < entities.length; j++) {
                 if (i == j) {
                     break;
                 }
 
-                if (movingObjects[i].coordinateX + movingObjects[i].IMAGE_WIDTH >= movingObjects[j].coordinateX
-                        && movingObjects[i].coordinateX <= movingObjects[j].coordinateX + movingObjects[j].IMAGE_WIDTH
-                        && movingObjects[i].coordinateY + movingObjects[i].IMAGE_HEIGHT >= movingObjects[j].coordinateY
-                        && movingObjects[i].coordinateY <= movingObjects[j].coordinateY + movingObjects[j].IMAGE_HEIGHT) {
+                if (entities[i].coordinateX + entities[i].IMAGE_WIDTH >= entities[j].coordinateX
+                        && entities[i].coordinateX <= entities[j].coordinateX + entities[j].IMAGE_WIDTH
+                        && entities[i].coordinateY + entities[i].IMAGE_HEIGHT >= entities[j].coordinateY
+                        && entities[i].coordinateY <= entities[j].coordinateY + entities[j].IMAGE_HEIGHT) {
                     // same signs of vectors
-                    if ((movingObjects[i].velocityX > 0 && movingObjects[j].velocityX > 0 && movingObjects[i].velocityY > 0 && movingObjects[j].velocityY > 0)
-                            || (movingObjects[i].velocityX < 0 && movingObjects[j].velocityX < 0 && movingObjects[i].velocityY < 0 && movingObjects[j].velocityY < 0)) {
-                        double temp = movingObjects[i].velocityX;
-                        movingObjects[i].velocityX = movingObjects[j].velocityX;
-                        movingObjects[j].velocityX = temp;
+                    if ((entities[i].velocityX > 0 && entities[j].velocityX > 0 && entities[i].velocityY > 0 && entities[j].velocityY > 0)
+                            || (entities[i].velocityX < 0 && entities[j].velocityX < 0 && entities[i].velocityY < 0 && entities[j].velocityY < 0)) {
+                        double temporaryVelocity = entities[i].velocityX;
+                        entities[i].velocityX = entities[j].velocityX;
+                        entities[j].velocityX = temporaryVelocity;
 
-                        temp = movingObjects[i].velocityY;
-                        movingObjects[i].velocityY = movingObjects[j].velocityY;
-                        movingObjects[j].velocityY = temp;
+                        temporaryVelocity = entities[i].velocityY;
+                        entities[i].velocityY = entities[j].velocityY;
+                        entities[j].velocityY = temporaryVelocity;
                     }
                     // different signs of vector
-                    else if ((movingObjects[i].velocityX < 0 && movingObjects[j].velocityX < 0 && movingObjects[i].velocityY > 0 && movingObjects[j].velocityY > 0)
-                            || (movingObjects[i].velocityX > 0 && movingObjects[j].velocityX > 0 && movingObjects[i].velocityY < 0 && movingObjects[j].velocityY < 0)) {
-                        double temp = movingObjects[i].velocityX;
-                        movingObjects[i].velocityX = movingObjects[j].velocityX;
-                        movingObjects[j].velocityX = temp;
+                    else if ((entities[i].velocityX < 0 && entities[j].velocityX < 0 && entities[i].velocityY > 0 && entities[j].velocityY > 0)
+                            || (entities[i].velocityX > 0 && entities[j].velocityX > 0 && entities[i].velocityY < 0 && entities[j].velocityY < 0)) {
+                        double temporaryVelocity = entities[i].velocityX;
+                        entities[i].velocityX = entities[j].velocityX;
+                        entities[j].velocityX = temporaryVelocity;
 
-                        temp = movingObjects[i].velocityY;
-                        movingObjects[i].velocityY = movingObjects[j].velocityY;
-                        movingObjects[j].velocityY = temp;
+                        temporaryVelocity = entities[i].velocityY;
+                        entities[i].velocityY = entities[j].velocityY;
+                        entities[j].velocityY = temporaryVelocity;
                     } else {
-                        movingObjects[i].velocityX = -movingObjects[i].velocityX;
-                        movingObjects[i].velocityY = -movingObjects[i].velocityY;
-                        movingObjects[i].coordinateX += movingObjects[i].velocityX;
-                        movingObjects[i].coordinateY += movingObjects[i].velocityY;
-                        movingObjects[j].velocityX = -movingObjects[j].velocityX;
-                        movingObjects[j].velocityY = -movingObjects[j].velocityY;
-                        movingObjects[j].coordinateX += movingObjects[j].velocityX;
-                        movingObjects[j].coordinateY += movingObjects[j].velocityY;
+                        entities[i].velocityX = -entities[i].velocityX;
+                        entities[i].velocityY = -entities[i].velocityY;
+                        entities[i].coordinateX += entities[i].velocityX;
+                        entities[i].coordinateY += entities[i].velocityY;
+                        entities[j].velocityX = -entities[j].velocityX;
+                        entities[j].velocityY = -entities[j].velocityY;
+                        entities[j].coordinateX += entities[j].velocityX;
+                        entities[j].coordinateY += entities[j].velocityY;
                     }
 
-                    movingObjects[i].changeTypeOfObject(movingObjects[j]);
+                    entities[i].changeTypeOfObject(entities[j]);
                 }
             }
         }
     }
 
-    private void changeTypeOfObject(MovingObject secondObject) {
+    private void changeTypeOfObject(Entity secondObject) {
         if (this.typeOfObject == secondObject.typeOfObject) {
             return;
         }
@@ -165,18 +163,18 @@ public class MovingObject {
         int[] topRight = new int[2];
         int[] allCoordinatesOfCorners = new int[8];
 
-        private Boundaries(MovingObject movingObject) {
-            this.bottomLeft[0] = movingObject.getCoordinateX();
-            this.bottomLeft[1] = movingObject.getCoordinateY();
+        private Boundaries(Entity entity) {
+            this.bottomLeft[0] = entity.getCoordinateX();
+            this.bottomLeft[1] = entity.getCoordinateY();
 
-            this.topLeft[0] = movingObject.coordinateX;
-            this.topLeft[1] = movingObject.coordinateY + movingObject.IMAGE_HEIGHT;
+            this.topLeft[0] = entity.coordinateX;
+            this.topLeft[1] = entity.coordinateY + entity.IMAGE_HEIGHT;
 
-            this.topRight[0] = movingObject.coordinateX + movingObject.IMAGE_WIDTH;
-            this.topRight[1] = movingObject.coordinateY + movingObject.IMAGE_HEIGHT;
+            this.topRight[0] = entity.coordinateX + entity.IMAGE_WIDTH;
+            this.topRight[1] = entity.coordinateY + entity.IMAGE_HEIGHT;
 
-            this.bottomRight[0] = movingObject.coordinateX + movingObject.IMAGE_WIDTH;
-            this.bottomRight[1] = movingObject.coordinateY;
+            this.bottomRight[0] = entity.coordinateX + entity.IMAGE_WIDTH;
+            this.bottomRight[1] = entity.coordinateY;
 
             this.allCoordinatesOfCorners[0] = this.topLeft[0];
             this.allCoordinatesOfCorners[1] = this.topLeft[1];
