@@ -3,20 +3,13 @@ import java.awt.*;
 
 
 public class Main {
-    public static void main(String[] args) {
-        JFrame frame = new JFrame("Moving Circles Example");
+    public static void main(String[] args) throws Exception {
+        JFrame frame = new JFrame("RockScissorsPaper");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        // Create a custom JPanel subclass to handle the animation
         MovingObjectsPanel movingObjectsPanel = new MovingObjectsPanel();
-
-        // Set the preferred size for the panel
-        movingObjectsPanel.setPreferredSize(new Dimension(400, 400));
-
-        // Add the panel to the frame
+        movingObjectsPanel.setPreferredSize(new Dimension(800, 600));
         frame.getContentPane().add(movingObjectsPanel);
-
-        // Set the size of the frame and make it visible
         frame.pack();
         frame.setVisible(true);
     }
