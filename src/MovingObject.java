@@ -1,13 +1,17 @@
+import javax.imageio.ImageIO;
 import java.awt.*;
-import java.sql.SQLOutput;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 
 public class MovingObject {
     private int coordinateX;
     private int coordinateY;
-    public final int IMAGE_HEIGHT = 30;
-    public final int IMAGE_WIDTH = 40;
+    private int IMAGE_HEIGHT;
+    private int IMAGE_WIDTH;
     public double velocityX;
     public double velocityY;
+
     public MovingObjectsPanel movingObjectsPanel;
     Image image;
     Type typeOfObject;
@@ -15,12 +19,6 @@ public class MovingObject {
 
     static MovingObject[] movingObjects = new MovingObject[10];
     static int counterOfObjectsInArray = 0;
-
-    enum Type{
-        scissors,
-        rock,
-        paper
-    }
 
     public MovingObject(int x1, int y1, double velocity, String imageAddress, MovingObjectsPanel movingObjectsPanel) {
         this.coordinateX = x1;
@@ -33,7 +31,19 @@ public class MovingObject {
         movingObjects[counterOfObjectsInArray] = this;
         counterOfObjectsInArray++;
 
-        String substring = imageAddress.substring(7);
+        File imageFile = new File(imageAddress);
+        try {
+            BufferedImage image = ImageIO.read(imageFile);
+            this.IMAGE_WIDTH = image.getWidth();
+            this.IMAGE_HEIGHT = image.getHeight();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        int startIndex = imageAddress.lastIndexOf('/') + 1;
+        int endIndex = imageAddress.lastIndexOf('.');
+        String substring = imageAddress.substring(startIndex, endIndex);
+
         switch (substring) {
             case "scissors" -> typeOfObject = Type.scissors;
             case "rock" -> typeOfObject = Type.rock;
@@ -58,15 +68,17 @@ public class MovingObject {
         }
     }
 
-    public static void checkCollision() {
+    static void checkCollision() {
         for(int i = 0; i < movingObjects.length; i++){
             if(movingObjects[i] == null){
                 break;
             }
+
             for(int j = 0; j < movingObjects.length; j++){
                 if(i == j){
                     break;
                 }
+
                 if (movingObjects[i].coordinateX + movingObjects[i].IMAGE_WIDTH >= movingObjects[j].coordinateX
                         && movingObjects[i].coordinateX <= movingObjects[j].coordinateX + movingObjects[j].IMAGE_WIDTH
                         && movingObjects[i].coordinateY + movingObjects[i].IMAGE_HEIGHT >= movingObjects[j].coordinateY
@@ -104,15 +116,42 @@ public class MovingObject {
                         movingObjects[j].coordinateY += movingObjects[j].velocityY;
                     }
 
-                    //change image and type
-                    if(movingObjects[i].typeOfObject != movingObjects[j].typeOfObject){
-                        if (movingObjects[i].typeOfObject == Type.scissors && movingObjects[j].typeOfObject == Type.paper){
-
-                        }
-                    }
+                    movingObjects[i].changeType(movingObjects[j]);
                 }
             }
+        }
+    }
 
+    private void changeType(MovingObject secondObject){
+        if (this.typeOfObject == secondObject.typeOfObject){
+            return;
+        }
+
+        if(this.typeOfObject == Type.paper && secondObject.typeOfObject == Type.scissors){
+            this.typeOfObject = Type.scissors;
+            this.image = Toolkit.getDefaultToolkit().getImage(this.typeOfObject.getValue());
+        }
+        if(this.typeOfObject == Type.paper && secondObject.typeOfObject == Type.rock){
+            secondObject.typeOfObject = Type.paper;
+            secondObject.image = Toolkit.getDefaultToolkit().getImage(this.typeOfObject.getValue());
+        }
+
+        if(this.typeOfObject == Type.rock && secondObject.typeOfObject == Type.scissors){
+            secondObject.typeOfObject = Type.rock;
+            secondObject.image = Toolkit.getDefaultToolkit().getImage(this.typeOfObject.getValue());
+        }
+        if(this.typeOfObject == Type.rock && secondObject.typeOfObject == Type.paper){
+            this.typeOfObject = Type.paper;
+            this.image = Toolkit.getDefaultToolkit().getImage(this.typeOfObject.getValue());
+        }
+
+        if(this.typeOfObject == Type.scissors && secondObject.typeOfObject == Type.rock){
+            this.typeOfObject = Type.rock;
+            this.image = Toolkit.getDefaultToolkit().getImage(this.typeOfObject.getValue());
+        }
+        if(this.typeOfObject == Type.scissors && secondObject.typeOfObject == Type.paper){
+            secondObject.typeOfObject = Type.scissors;
+            secondObject.image = Toolkit.getDefaultToolkit().getImage(this.typeOfObject.getValue());
         }
     }
 
@@ -122,61 +161,6 @@ public class MovingObject {
 
     public int getCoordinateY(){
         return coordinateY;
-    }
-
-    public void move(){
-        this.coordinateX += this.velocityX;
-        this.coordinateY += this.velocityY;
-        for (int i = 0; i < this.boundaries.allCoordinatesOfCorners.length; i++){
-            this.boundaries.allCoordinatesOfCorners[i] += (int)this.velocityX;
-        }
-    }
-
-    public boolean isColliding(MovingObject movingObject) {
-        int square1MinX = findMinX(this.boundaries.allCoordinatesOfCorners);
-        int square1MaxX = findMaxX(this.boundaries.allCoordinatesOfCorners);
-        int square1MinY = findMinY(this.boundaries.allCoordinatesOfCorners);
-        int square1MaxY = findMaxY(this.boundaries.allCoordinatesOfCorners);
-
-        int square2MinX = findMinX(movingObject.boundaries.allCoordinatesOfCorners);
-        int square2MaxX = findMaxX(movingObject.boundaries.allCoordinatesOfCorners);
-        int square2MinY = findMinY(movingObject.boundaries.allCoordinatesOfCorners);
-        int square2MaxY = findMaxY(movingObject.boundaries.allCoordinatesOfCorners);
-
-        return !(square1MaxX < square2MinX || square1MinX > square2MaxX
-                || square1MaxY < square2MinY || square1MinY > square2MaxY);
-    }
-
-    private int findMinX(int[] allCoordinatesOfCorners) {
-        int minX = Integer.MAX_VALUE;
-        for (int i = 0; i < allCoordinatesOfCorners.length; i += 2) {
-            minX = Math.min(minX, allCoordinatesOfCorners[i]);
-        }
-        return minX;
-    }
-
-    private int findMaxX(int[] allCoordinatesOfCorners) {
-        int maxX = Integer.MIN_VALUE;
-        for (int i = 0; i < allCoordinatesOfCorners.length; i += 2) {
-            maxX = Math.max(maxX, allCoordinatesOfCorners[i]);
-        }
-        return maxX;
-    }
-
-    private int findMinY(int[] allCoordinatesOfCorners) {
-        int minY = Integer.MAX_VALUE;
-        for (int i = 1; i < allCoordinatesOfCorners.length; i += 2) {
-            minY = Math.min(minY, allCoordinatesOfCorners[i]);
-        }
-        return minY;
-    }
-
-    private int findMaxY(int[] allCoordinatesOfCorners) {
-        int maxY = Integer.MIN_VALUE;
-        for (int i = 1; i < allCoordinatesOfCorners.length; i += 2) {
-            maxY = Math.max(maxY, allCoordinatesOfCorners[i]);
-        }
-        return maxY;
     }
 
     /**
@@ -189,7 +173,7 @@ public class MovingObject {
         int[] topRight = new int[2];
         int[] allCoordinatesOfCorners = new int[8];
 
-        public Boundaries(MovingObject movingObject){
+        private Boundaries(MovingObject movingObject){
             this.bottomLeft[0] = movingObject.getCoordinateX();
             this.bottomLeft[1] = movingObject.getCoordinateY();
 
@@ -210,7 +194,22 @@ public class MovingObject {
             this.allCoordinatesOfCorners[5] = this.bottomRight[1];
             this.allCoordinatesOfCorners[6] = this.bottomLeft[0];
             this.allCoordinatesOfCorners[7] = this.bottomLeft[1];
+        }
+    }
 
+    enum Type {
+        scissors("assets/scissors.png"),
+        rock("assets/rock.png"),
+        paper("assets/paper.png");
+
+        private final String value;
+
+        Type(String value) {
+            this.value = value;
+        }
+
+        public String getValue() {
+            return value;
         }
     }
 }
