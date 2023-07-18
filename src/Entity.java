@@ -16,16 +16,17 @@ public class Entity {
     /**
      * Contains every created object of this class. It is necessary for controlling collisions.
      */
-    static Entity[] entities = new Entity[200];
+    static Entity[] entities = new Entity[1000];
     Image image;
     Type typeOfObject;
     Boundaries boundaries;
     static int counterOfObjectsInArray = 0;
-    public Entity(int x, int y, double velocity, Type type, MovingObjectsPanel movingObjectsPanel) throws Exception {
+
+    public Entity(int x, int y, double velocityX, double velocityY, Type type, MovingObjectsPanel movingObjectsPanel) throws Exception {
         this.coordinateX = x;
         this.coordinateY = y;
-        this.velocityX = velocity;
-        this.velocityY = -velocity;
+        this.velocityX = velocityX;
+        this.velocityY = -velocityY;
         this.typeOfObject = type;
         this.image = Toolkit.getDefaultToolkit().getImage(type.getValue());
         this.boundaries = new Boundaries(this);

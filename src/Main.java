@@ -7,8 +7,7 @@ public class Main {
         JFrame frame = new JFrame("RockScissorsPaper");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        MovingObjectsPanel movingObjectsPanel = new MovingObjectsPanel(199);
-        movingObjectsPanel.setPreferredSize(new Dimension(800, 600));
+        MovingObjectsPanel movingObjectsPanel = new MovingObjectsPanel(50, 900, 900);
         frame.getContentPane().add(movingObjectsPanel);
         frame.pack();
         frame.setVisible(true);
