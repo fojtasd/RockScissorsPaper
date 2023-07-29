@@ -14,7 +14,6 @@ public class Entity {
     public int velocityX;
     public int velocityY;
     public MovingObjectsPanel movingObjectsPanel;
-    public PlaceOfCollision placeOfCollision;
 
     /**
      * Contains every created object of this class. It is necessary for controlling collisions.
@@ -83,11 +82,6 @@ public class Entity {
         if (coordinateY + velocityY + IMAGE_HEIGHT >= movingObjectsPanel.getHeight() || coordinateY - velocityY <= 0) {
             velocityY = -velocityY; // Reverse y-direction velocity if the square hits the vertical edges
             move();
-            if(coordinateY + IMAGE_HEIGHT >= movingObjectsPanel.getHeight()){
-                this.placeOfCollision = PlaceOfCollision.bottom;
-            } else {
-                this.placeOfCollision = PlaceOfCollision.top;
-            }
         }
 
         //This block prevents crossing edges of canvas.
@@ -238,18 +232,6 @@ public class Entity {
             this.allCoordinatesOfCorners[6] = this.bottomLeft[0];
             this.allCoordinatesOfCorners[7] = this.bottomLeft[1];
         }
-    }
-
-    private enum PlaceOfCollision {
-        top,
-        bottom,
-        left,
-        right,
-        objectTop,
-        objectBottom,
-        objectLeft,
-        objectRight,
-        noCollision;
     }
 
     public enum Type {
