@@ -13,14 +13,9 @@ public class Entity {
     public int velocityY;
     public MovingObjectsPanel movingObjectsPanel;
 
-    /**
-     * Contains every created object of this class. It is necessary for controlling collisions.
-     */
-    static Entity[] entities = new Entity[1000];
     Image image;
     private Type typeOfObject;
     Boundaries boundaries;
-    static int counterOfObjectsInArray = 0;
 
     public Entity(int x, int y, int velocityX, int velocityY, Type type, MovingObjectsPanel movingObjectsPanel) throws Exception {
         this.coordinateX = x;
@@ -31,8 +26,7 @@ public class Entity {
         this.image = Toolkit.getDefaultToolkit().getImage(type.getValue());
         this.boundaries = new Boundaries(this);
         this.movingObjectsPanel = movingObjectsPanel;
-        entities[counterOfObjectsInArray] = this;
-        counterOfObjectsInArray++;
+        EntityPool.getInstance().getEntities().add(this);
 
         File imageFile = new File(type.getValue());
         try {
@@ -107,51 +101,60 @@ public class Entity {
     }
 
     static void checkCollisionsBetweenObjects() {
-        for (int i = 0; i < entities.length; i++) {
-            if (entities[i] == null) {
+        final EntityPool pool = EntityPool.getInstance();
+        final int entititesSize = pool.getEntities().size();
+
+        for (int i = 0; i < entititesSize; i++) {
+            final Entity left = pool.getEntities().get(i);
+            if (left == null) {
                 break;
             }
 
-            for (int j = 0; j < entities.length; j++) {
+            for (int j = 0; j < entititesSize; j++) {
                 if (i == j) {
-                    break;
+                    continue;
                 }
-                if (entities[i].coordinateX + entities[i].IMAGE_WIDTH >= entities[j].coordinateX
-                        && entities[i].coordinateX <= entities[j].coordinateX + entities[j].IMAGE_WIDTH
-                        && entities[i].coordinateY + entities[i].IMAGE_HEIGHT >= entities[j].coordinateY
-                        && entities[i].coordinateY <= entities[j].coordinateY + entities[j].IMAGE_HEIGHT) {
-                    // same signs of vectors
-                    if ((entities[i].velocityX > 0 && entities[j].velocityX > 0 && entities[i].velocityY > 0 && entities[j].velocityY > 0)
-                            || (entities[i].velocityX < 0 && entities[j].velocityX < 0 && entities[i].velocityY < 0 && entities[j].velocityY < 0)) {
-                        int temporaryVelocity = entities[i].velocityX;
-                        entities[i].velocityX = entities[j].velocityX;
-                        entities[j].velocityX = temporaryVelocity;
+                final Entity right = pool.getEntities().get(j);
 
-                        temporaryVelocity = entities[i].velocityY;
-                        entities[i].velocityY = entities[j].velocityY;
-                        entities[j].velocityY = temporaryVelocity;
+                // left.coordinate + imageSize >= right.coordinate
+                // TODO ...
+
+                if (left.coordinateX + left.IMAGE_WIDTH >= right.coordinateX
+                        && left.coordinateX <= right.coordinateX + right.IMAGE_WIDTH
+                        && left.coordinateY + left.IMAGE_HEIGHT >= right.coordinateY
+                        && left.coordinateY <= right.coordinateY + right.IMAGE_HEIGHT) {
+                    // same signs of vectors
+                    if ((left.velocityX > 0 && right.velocityX > 0 && left.velocityY > 0 && right.velocityY > 0)
+                            || (left.velocityX < 0 && right.velocityX < 0 && left.velocityY < 0 && right.velocityY < 0)) {
+                        int temporaryVelocity = left.velocityX;
+                        left.velocityX = right.velocityX;
+                        right.velocityX = temporaryVelocity;
+
+                        temporaryVelocity = left.velocityY;
+                        left.velocityY = right.velocityY;
+                        right.velocityY = temporaryVelocity;
                     }
                     // different signs of vector
-                    else if ((entities[i].velocityX < 0 && entities[j].velocityX < 0 && entities[i].velocityY > 0 && entities[j].velocityY > 0)
-                            || (entities[i].velocityX > 0 && entities[j].velocityX > 0 && entities[i].velocityY < 0 && entities[j].velocityY < 0)) {
-                        int temporaryVelocity = entities[i].velocityX;
-                        entities[i].velocityX = entities[j].velocityX;
-                        entities[j].velocityX = temporaryVelocity;
+                    else if ((left.velocityX < 0 && right.velocityX < 0 && left.velocityY > 0 && right.velocityY > 0)
+                            || (left.velocityX > 0 && right.velocityX > 0 && left.velocityY < 0 && right.velocityY < 0)) {
+                        int temporaryVelocity = left.velocityX;
+                        left.velocityX = right.velocityX;
+                        right.velocityX = temporaryVelocity;
 
-                        temporaryVelocity = entities[i].velocityY;
-                        entities[i].velocityY = entities[j].velocityY;
-                        entities[j].velocityY = temporaryVelocity;
+                        temporaryVelocity = left.velocityY;
+                        left.velocityY = right.velocityY;
+                        right.velocityY = temporaryVelocity;
                     } else {
-                        entities[i].velocityX = -entities[i].velocityX;
-                        entities[i].velocityY = -entities[i].velocityY;
-                        entities[i].coordinateX += entities[i].velocityX;
-                        entities[i].coordinateY += entities[i].velocityY;
-                        entities[j].velocityX = -entities[j].velocityX;
-                        entities[j].velocityY = -entities[j].velocityY;
-                        entities[j].coordinateX += entities[j].velocityX;
-                        entities[j].coordinateY += entities[j].velocityY;
+                        left.velocityX = -left.velocityX;
+                        left.velocityY = -left.velocityY;
+                        left.coordinateX += left.velocityX;
+                        left.coordinateY += left.velocityY;
+                        right.velocityX = -right.velocityX;
+                        right.velocityY = -right.velocityY;
+                        right.coordinateX += right.velocityX;
+                        right.coordinateY += right.velocityY;
                     }
-                    entities[i].changeTypeOfObject(entities[j]);
+                    left.changeTypeOfObject(right);
                 }
             }
         }
