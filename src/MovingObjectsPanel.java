@@ -4,31 +4,39 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 public class MovingObjectsPanel extends JPanel implements ActionListener {
-    public MovingObjectsPanel(int numberOfObjects, int width, int height) throws Exception {
-        setPreferredSize(new Dimension(width, height));
-        objectsCreator(numberOfObjects);
+    int canvasWidth;
+    int canvasHeight;
+    int imageHeight;
+    int imageWidth;
 
+    public MovingObjectsPanel(int numberOfObjects, int canvasWidth, int canvasHeight) throws Exception {
+        this.canvasWidth = canvasWidth;
+        this.canvasHeight = canvasHeight;
+        this.imageWidth = Entity.getImageSize()[0];
+        this.imageHeight = Entity.getImageSize()[1];
+        objectsCreator(numberOfObjects);
+        setPreferredSize(new Dimension(this.canvasWidth, this.canvasHeight));
 
         javax.swing.Timer timer = new javax.swing.Timer(10, this);
         timer.start();
     }
 
     private void objectsCreator(int numberOfObjects) throws Exception {
-        for (int i = 0; i < numberOfObjects + 1; i++) {
-            new Entity(Tools.generateRandomNumberInRange(30, 770),
-                    Tools.generateRandomNumberInRange(30, 770),
+        for (int i = 0; i < numberOfObjects; i++) {
+            new Entity(Tools.generateRandomNumberInRange(0, canvasWidth - imageWidth),
+                    Tools.generateRandomNumberInRange(0, canvasHeight - imageHeight),
                     Tools.generateNegativeOrPositiveRandomNumberInRange(1, 2),
-                    Tools.generateNegativeOrPositiveRandomNumberInRange(1, 3),
+                    Tools.generateNegativeOrPositiveRandomNumberInRange(1, 2),
                     Entity.Type.scissors, this);
-            new Entity(Tools.generateRandomNumberInRange(30, 770),
-                    Tools.generateRandomNumberInRange(30, 770),
+            new Entity(Tools.generateRandomNumberInRange(0, canvasWidth - imageWidth),
+                    Tools.generateRandomNumberInRange(0, canvasHeight - imageHeight),
                     Tools.generateNegativeOrPositiveRandomNumberInRange(1, 2),
-                    Tools.generateNegativeOrPositiveRandomNumberInRange(1, 3),
+                    Tools.generateNegativeOrPositiveRandomNumberInRange(1, 2),
                     Entity.Type.rock, this);
-            new Entity(Tools.generateRandomNumberInRange(30, 770),
-                    Tools.generateRandomNumberInRange(30, 770),
+            new Entity(Tools.generateRandomNumberInRange(0, canvasWidth - imageWidth),
+                    Tools.generateRandomNumberInRange(0, canvasHeight - imageHeight),
                     Tools.generateNegativeOrPositiveRandomNumberInRange(1, 2),
-                    Tools.generateNegativeOrPositiveRandomNumberInRange(1, 3),
+                    Tools.generateNegativeOrPositiveRandomNumberInRange(1, 2),
                     Entity.Type.paper, this);
         }
     }
@@ -47,11 +55,20 @@ public class MovingObjectsPanel extends JPanel implements ActionListener {
             }
             g.drawImage(entity.image, entity.getCoordinateX(), entity.getCoordinateY(), this);
         }
+        for (Entity entity : Entity.entities) {
+            if (entity == null) {
+                break;
+            }
+            if (entity.placeOfCollision == null){
+                break;
+            }
+            System.out.println(entity.placeOfCollision);
+        }
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        Entity.checkCollision();
+        Entity.checkCollisionsBetweenObjects();
         for (Entity entity : Entity.entities) {
             if (entity == null) {
                 break;

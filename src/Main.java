@@ -1,15 +1,12 @@
 import javax.swing.JFrame;
 
 public class Main {
-    /**
-     * Enter desire number of rock, scissors, paper. Entities are in the same ratio.
-     */
-    public static int numberOfObjects = 50;
+    public static int numberOfObjects = 1;
 
     /**
-     * Enter desire size of canvas.
+     * Enter desired size of canvas.
      */
-    public static int widthOfCanvas = 900;
+    public static int widthOfCanvas = 1200;
     public static int heightOfCanvas = 900;
 
     public static void main(String[] args) throws Exception {

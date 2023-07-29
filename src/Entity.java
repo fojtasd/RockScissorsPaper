@@ -4,25 +4,28 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 
+// Incremental adding of velocity????
+
 public class Entity {
     private int coordinateX;
     private int coordinateY;
-    private final int IMAGE_HEIGHT;
-    private final int IMAGE_WIDTH;
-    public double velocityX;
-    public double velocityY;
+    public final int IMAGE_HEIGHT;
+    public final int IMAGE_WIDTH;
+    public int velocityX;
+    public int velocityY;
     public MovingObjectsPanel movingObjectsPanel;
+    public PlaceOfCollision placeOfCollision;
 
     /**
      * Contains every created object of this class. It is necessary for controlling collisions.
      */
     static Entity[] entities = new Entity[1000];
     Image image;
-    Type typeOfObject;
+    private Type typeOfObject;
     Boundaries boundaries;
     static int counterOfObjectsInArray = 0;
 
-    public Entity(int x, int y, double velocityX, double velocityY, Type type, MovingObjectsPanel movingObjectsPanel) throws Exception {
+    public Entity(int x, int y, int velocityX, int velocityY, Type type, MovingObjectsPanel movingObjectsPanel) throws Exception {
         this.coordinateX = x;
         this.coordinateY = y;
         this.velocityX = velocityX;
@@ -44,23 +47,74 @@ public class Entity {
         }
     }
 
+    /**
+     * Images have to be the same size, so rock object is used.
+     *
+     * @return size of the image in order width, height.
+     * @throws Exception in case image was not properly loaded or is missing.
+     */
+    public static int[] getImageSize() throws Exception {
+        int[] imageSize = new int[2];
+        File imageFile = new File(Type.rock.getValue());
+        try {
+            BufferedImage image = ImageIO.read(imageFile);
+            imageSize[0] = image.getWidth();
+            imageSize[1] = image.getHeight();
+        } catch (IOException e) {
+            throw new Exception("Image has not been read correctly. Incorrect path.");
+        }
+        return imageSize;
+    }
+
+    /**
+     * Updates object's x and y coordination in accordance to its velocity.
+     */
     void updateObjectPosition() {
-        coordinateX += velocityX;
-        coordinateY += velocityY;
+        move();
         for (int i = 0; i < this.boundaries.allCoordinatesOfCorners.length; i++) {
-            this.boundaries.allCoordinatesOfCorners[i] += (int) this.velocityX;
+            this.boundaries.allCoordinatesOfCorners[i] += this.velocityX;
         }
 
-        if (coordinateX + IMAGE_WIDTH >= movingObjectsPanel.getWidth() || coordinateX <= 0) {
+        if ((coordinateX + velocityX + IMAGE_WIDTH) >= movingObjectsPanel.getWidth() || (coordinateX - velocityX) <= 0) {
             velocityX = -velocityX; // Reverse x-direction velocity if the square hits the horizontal edges
+            move();
         }
 
-        if (coordinateY + IMAGE_HEIGHT >= movingObjectsPanel.getHeight() || coordinateY <= 0) {
+        if (coordinateY + velocityY + IMAGE_HEIGHT >= movingObjectsPanel.getHeight() || coordinateY - velocityY <= 0) {
             velocityY = -velocityY; // Reverse y-direction velocity if the square hits the vertical edges
+            move();
+            if(coordinateY + IMAGE_HEIGHT >= movingObjectsPanel.getHeight()){
+                this.placeOfCollision = PlaceOfCollision.bottom;
+            } else {
+                this.placeOfCollision = PlaceOfCollision.top;
+            }
+        }
+
+        //This block prevents crossing edges of canvas.
+        if (coordinateX < 0) {
+            coordinateX = 1;
+            velocityX *= -1;
+        }
+        if (coordinateX > movingObjectsPanel.getWidth()) {
+            coordinateX = movingObjectsPanel.canvasWidth + 1;
+            velocityX *= -1;
+        }
+        if (coordinateY < 0) {
+            coordinateY = 1;
+            velocityY *= -1;
+        }
+        if (coordinateY > movingObjectsPanel.getHeight()) {
+            coordinateY = movingObjectsPanel.canvasHeight + 1;
+            velocityY *= -1;
         }
     }
 
-    static void checkCollision() {
+    private void move(){
+        coordinateX += velocityX;
+        coordinateY += velocityY;
+    }
+
+    static void checkCollisionsBetweenObjects() {
         for (int i = 0; i < entities.length; i++) {
             if (entities[i] == null) {
                 break;
@@ -70,7 +124,6 @@ public class Entity {
                 if (i == j) {
                     break;
                 }
-
                 if (entities[i].coordinateX + entities[i].IMAGE_WIDTH >= entities[j].coordinateX
                         && entities[i].coordinateX <= entities[j].coordinateX + entities[j].IMAGE_WIDTH
                         && entities[i].coordinateY + entities[i].IMAGE_HEIGHT >= entities[j].coordinateY
@@ -78,7 +131,7 @@ public class Entity {
                     // same signs of vectors
                     if ((entities[i].velocityX > 0 && entities[j].velocityX > 0 && entities[i].velocityY > 0 && entities[j].velocityY > 0)
                             || (entities[i].velocityX < 0 && entities[j].velocityX < 0 && entities[i].velocityY < 0 && entities[j].velocityY < 0)) {
-                        double temporaryVelocity = entities[i].velocityX;
+                        int temporaryVelocity = entities[i].velocityX;
                         entities[i].velocityX = entities[j].velocityX;
                         entities[j].velocityX = temporaryVelocity;
 
@@ -89,7 +142,7 @@ public class Entity {
                     // different signs of vector
                     else if ((entities[i].velocityX < 0 && entities[j].velocityX < 0 && entities[i].velocityY > 0 && entities[j].velocityY > 0)
                             || (entities[i].velocityX > 0 && entities[j].velocityX > 0 && entities[i].velocityY < 0 && entities[j].velocityY < 0)) {
-                        double temporaryVelocity = entities[i].velocityX;
+                        int temporaryVelocity = entities[i].velocityX;
                         entities[i].velocityX = entities[j].velocityX;
                         entities[j].velocityX = temporaryVelocity;
 
@@ -106,7 +159,6 @@ public class Entity {
                         entities[j].coordinateX += entities[j].velocityX;
                         entities[j].coordinateY += entities[j].velocityY;
                     }
-
                     entities[i].changeTypeOfObject(entities[j]);
                 }
             }
@@ -155,7 +207,7 @@ public class Entity {
     }
 
     /**
-     * Contains coordinates of each corner in order x,y
+     * Contains coordinates of each corner in order x,y.
      */
     private static class Boundaries {
         int[] bottomLeft = new int[2];
@@ -186,6 +238,18 @@ public class Entity {
             this.allCoordinatesOfCorners[6] = this.bottomLeft[0];
             this.allCoordinatesOfCorners[7] = this.bottomLeft[1];
         }
+    }
+
+    private enum PlaceOfCollision {
+        top,
+        bottom,
+        left,
+        right,
+        objectTop,
+        objectBottom,
+        objectLeft,
+        objectRight,
+        noCollision;
     }
 
     public enum Type {

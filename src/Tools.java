@@ -3,7 +3,7 @@ import java.util.Random;
 public class Tools {
     public static int generateNegativeOrPositiveRandomNumberInRange(int min, int max) {
         if (min >= max) {
-            throw new IllegalArgumentException("Invalid range");
+            throw new IllegalArgumentException("Invalid range.");
         }
         Random random = new Random();
         int finalRandomValue;
@@ -23,7 +23,7 @@ public class Tools {
 
     public static int generateRandomNumberInRange(int min, int max) {
         if (min >= max) {
-            throw new IllegalArgumentException("Invalid range");
+            throw new IllegalArgumentException("Invalid range.");
         }
         Random random = new Random();
 
