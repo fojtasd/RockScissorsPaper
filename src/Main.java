@@ -1,7 +1,7 @@
 import javax.swing.JFrame;
 
 public class Main {
-    public static int numberOfObjects = 1;
+    public static int numberOfObjects = 50;
 
     /**
      * Enter desired size of canvas.

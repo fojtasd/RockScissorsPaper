@@ -55,15 +55,6 @@ public class MovingObjectsPanel extends JPanel implements ActionListener {
             }
             g.drawImage(entity.image, entity.getCoordinateX(), entity.getCoordinateY(), this);
         }
-        for (Entity entity : Entity.entities) {
-            if (entity == null) {
-                break;
-            }
-            if (entity.placeOfCollision == null){
-                break;
-            }
-            System.out.println(entity.placeOfCollision);
-        }
     }
 
     @Override

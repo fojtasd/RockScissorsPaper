@@ -4,8 +4,6 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 
-// Incremental adding of velocity????
-
 public class Entity {
     private int coordinateX;
     private int coordinateY;
