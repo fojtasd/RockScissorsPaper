@@ -14,14 +14,16 @@ public class MovingObjectsPanel extends JPanel implements ActionListener {
         this.canvasHeight = canvasHeight;
         this.imageWidth = Entity.getImageSize()[0];
         this.imageHeight = Entity.getImageSize()[1];
-        objectsCreator(numberOfObjects);
+        createEntities(numberOfObjects);
         setPreferredSize(new Dimension(this.canvasWidth, this.canvasHeight));
 
         javax.swing.Timer timer = new javax.swing.Timer(10, this);
         timer.start();
     }
 
-    private void objectsCreator(int numberOfObjects) throws Exception {
+    private void createEntities(int numberOfObjects) throws Exception {
+        System.out.println(imageWidth);
+        System.out.println(imageHeight);
         for (int i = 0; i < numberOfObjects; i++) {
             new Entity(Tools.generateRandomNumberInRange(0, canvasWidth - imageWidth),
                     Tools.generateRandomNumberInRange(0, canvasHeight - imageHeight),
@@ -49,7 +51,7 @@ public class MovingObjectsPanel extends JPanel implements ActionListener {
         g.setColor(Color.WHITE);
         g.fillRect(0, 0, getWidth(), getHeight());
 
-        for (Entity entity : Entity.entities) {
+        for (Entity entity : EntityPool.getInstance().getEntities()) {
             if (entity == null) {
                 break;
             }
@@ -60,7 +62,7 @@ public class MovingObjectsPanel extends JPanel implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent e) {
         Entity.checkCollisionsBetweenObjects();
-        for (Entity entity : Entity.entities) {
+        for (Entity entity : EntityPool.getInstance().getEntities()) {
             if (entity == null) {
                 break;
             }
