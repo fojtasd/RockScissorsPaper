@@ -7,15 +7,13 @@ import java.io.IOException;
 public class Entity {
     private int coordinateX;
     private int coordinateY;
-    public final int IMAGE_HEIGHT;
-    public final int IMAGE_WIDTH;
-    public int velocityX;
-    public int velocityY;
-    public MovingObjectsPanel movingObjectsPanel;
-
-    Image image;
+    private final int IMAGE_HEIGHT;
+    private final int IMAGE_WIDTH;
+    private int velocityX;
+    private int velocityY;
+    private final MovingObjectsPanel movingObjectsPanel;
+    private Image image;
     private Type typeOfObject;
-    Boundaries boundaries;
 
     public Entity(int x, int y, int velocityX, int velocityY, Type type, MovingObjectsPanel movingObjectsPanel) throws Exception {
         this.coordinateX = x;
@@ -24,7 +22,6 @@ public class Entity {
         this.velocityY = -velocityY;
         this.typeOfObject = type;
         this.image = Toolkit.getDefaultToolkit().getImage(type.getValue());
-        this.boundaries = new Boundaries(this);
         this.movingObjectsPanel = movingObjectsPanel;
         EntityPool.getInstance().getEntities().add(this);
 
@@ -36,6 +33,10 @@ public class Entity {
         } catch (IOException e) {
             throw new Exception("Image has not been read correctly. Incorrect path.");
         }
+    }
+
+    public Type getTypeOfObject() {
+        return typeOfObject;
     }
 
     /**
@@ -59,13 +60,9 @@ public class Entity {
 
     /**
      * Updates object's x and y coordination in accordance to its velocity.
+     * Reverse velocity if edge is reached.
      */
     void updateObjectPosition() {
-        move();
-        for (int i = 0; i < this.boundaries.allCoordinatesOfCorners.length; i++) {
-            this.boundaries.allCoordinatesOfCorners[i] += this.velocityX;
-        }
-
         if ((coordinateX + velocityX + IMAGE_WIDTH) >= movingObjectsPanel.getWidth() || (coordinateX - velocityX) <= 0) {
             velocityX = -velocityX; // Reverse x-direction velocity if the square hits the horizontal edges
             move();
@@ -93,6 +90,8 @@ public class Entity {
             coordinateY = movingObjectsPanel.canvasHeight + 1;
             velocityY *= -1;
         }
+
+        move();
     }
 
     private void move(){
@@ -102,27 +101,25 @@ public class Entity {
 
     static void checkCollisionsBetweenObjects() {
         final EntityPool pool = EntityPool.getInstance();
-        final int entititesSize = pool.getEntities().size();
+        final int entitiesSize = pool.getEntities().size();
 
-        for (int i = 0; i < entititesSize; i++) {
+        for (int i = 0; i < entitiesSize; i++) {
             final Entity left = pool.getEntities().get(i);
             if (left == null) {
                 break;
             }
 
-            for (int j = 0; j < entititesSize; j++) {
+            for (int j = 0; j < entitiesSize; j++) {
                 if (i == j) {
                     continue;
                 }
                 final Entity right = pool.getEntities().get(j);
 
-                // left.coordinate + imageSize >= right.coordinate
-                // TODO ...
-
                 if (left.coordinateX + left.IMAGE_WIDTH >= right.coordinateX
-                        && left.coordinateX <= right.coordinateX + right.IMAGE_WIDTH
-                        && left.coordinateY + left.IMAGE_HEIGHT >= right.coordinateY
-                        && left.coordinateY <= right.coordinateY + right.IMAGE_HEIGHT) {
+                        && left.coordinateX < right.coordinateX + right.IMAGE_WIDTH
+                        && left.coordinateY + left.IMAGE_HEIGHT > right.coordinateY
+                        && left.coordinateY < right.coordinateY + right.IMAGE_HEIGHT) {
+
                     // same signs of vectors
                     if ((left.velocityX > 0 && right.velocityX > 0 && left.velocityY > 0 && right.velocityY > 0)
                             || (left.velocityX < 0 && right.velocityX < 0 && left.velocityY < 0 && right.velocityY < 0)) {
@@ -154,42 +151,42 @@ public class Entity {
                         right.coordinateX += right.velocityX;
                         right.coordinateY += right.velocityY;
                     }
-                    left.changeTypeOfObject(right);
+                    changeTypeOfObject(right, left);
                 }
             }
         }
     }
 
-    private void changeTypeOfObject(Entity secondObject) {
-        if (this.typeOfObject == secondObject.typeOfObject) {
+    private static void changeTypeOfObject(Entity A, Entity B) {
+        if (A.typeOfObject == B.typeOfObject) {
             return;
         }
 
-        if (this.typeOfObject == Type.paper && secondObject.typeOfObject == Type.scissors) {
-            this.typeOfObject = Type.scissors;
-            this.image = Toolkit.getDefaultToolkit().getImage(this.typeOfObject.getValue());
+        if (A.typeOfObject == Type.paper && B.typeOfObject == Type.scissors) {
+            A.typeOfObject = Type.scissors;
+            A.image = Toolkit.getDefaultToolkit().getImage(A.typeOfObject.getValue());
         }
-        if (this.typeOfObject == Type.paper && secondObject.typeOfObject == Type.rock) {
-            secondObject.typeOfObject = Type.paper;
-            secondObject.image = Toolkit.getDefaultToolkit().getImage(this.typeOfObject.getValue());
-        }
-
-        if (this.typeOfObject == Type.rock && secondObject.typeOfObject == Type.scissors) {
-            secondObject.typeOfObject = Type.rock;
-            secondObject.image = Toolkit.getDefaultToolkit().getImage(this.typeOfObject.getValue());
-        }
-        if (this.typeOfObject == Type.rock && secondObject.typeOfObject == Type.paper) {
-            this.typeOfObject = Type.paper;
-            this.image = Toolkit.getDefaultToolkit().getImage(this.typeOfObject.getValue());
+        if (A.typeOfObject == Type.paper && B.typeOfObject == Type.rock) {
+            B.typeOfObject = Type.paper;
+            B.image = Toolkit.getDefaultToolkit().getImage(A.typeOfObject.getValue());
         }
 
-        if (this.typeOfObject == Type.scissors && secondObject.typeOfObject == Type.rock) {
-            this.typeOfObject = Type.rock;
-            this.image = Toolkit.getDefaultToolkit().getImage(this.typeOfObject.getValue());
+        if (A.typeOfObject == Type.rock && B.typeOfObject == Type.scissors) {
+            B.typeOfObject = Type.rock;
+            B.image = Toolkit.getDefaultToolkit().getImage(A.typeOfObject.getValue());
         }
-        if (this.typeOfObject == Type.scissors && secondObject.typeOfObject == Type.paper) {
-            secondObject.typeOfObject = Type.scissors;
-            secondObject.image = Toolkit.getDefaultToolkit().getImage(this.typeOfObject.getValue());
+        if (A.typeOfObject == Type.rock && B.typeOfObject == Type.paper) {
+            A.typeOfObject = Type.paper;
+            A.image = Toolkit.getDefaultToolkit().getImage(A.typeOfObject.getValue());
+        }
+
+        if (A.typeOfObject == Type.scissors && B.typeOfObject == Type.rock) {
+            A.typeOfObject = Type.rock;
+            A.image = Toolkit.getDefaultToolkit().getImage(A.typeOfObject.getValue());
+        }
+        if (A.typeOfObject == Type.scissors && B.typeOfObject == Type.paper) {
+            B.typeOfObject = Type.scissors;
+            B.image = Toolkit.getDefaultToolkit().getImage(A.typeOfObject.getValue());
         }
     }
 
@@ -201,38 +198,8 @@ public class Entity {
         return coordinateY;
     }
 
-    /**
-     * Contains coordinates of each corner in order x,y.
-     */
-    private static class Boundaries {
-        int[] bottomLeft = new int[2];
-        int[] topLeft = new int[2];
-        int[] bottomRight = new int[2];
-        int[] topRight = new int[2];
-        int[] allCoordinatesOfCorners = new int[8];
-
-        private Boundaries(Entity entity) {
-            this.bottomLeft[0] = entity.getCoordinateX();
-            this.bottomLeft[1] = entity.getCoordinateY();
-
-            this.topLeft[0] = entity.coordinateX;
-            this.topLeft[1] = entity.coordinateY + entity.IMAGE_HEIGHT;
-
-            this.topRight[0] = entity.coordinateX + entity.IMAGE_WIDTH;
-            this.topRight[1] = entity.coordinateY + entity.IMAGE_HEIGHT;
-
-            this.bottomRight[0] = entity.coordinateX + entity.IMAGE_WIDTH;
-            this.bottomRight[1] = entity.coordinateY;
-
-            this.allCoordinatesOfCorners[0] = this.topLeft[0];
-            this.allCoordinatesOfCorners[1] = this.topLeft[1];
-            this.allCoordinatesOfCorners[2] = this.topRight[0];
-            this.allCoordinatesOfCorners[3] = this.topRight[1];
-            this.allCoordinatesOfCorners[4] = this.bottomRight[0];
-            this.allCoordinatesOfCorners[5] = this.bottomRight[1];
-            this.allCoordinatesOfCorners[6] = this.bottomLeft[0];
-            this.allCoordinatesOfCorners[7] = this.bottomLeft[1];
-        }
+    public Image getImage() {
+        return image;
     }
 
     public enum Type {

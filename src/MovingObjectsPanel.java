@@ -22,8 +22,6 @@ public class MovingObjectsPanel extends JPanel implements ActionListener {
     }
 
     private void createEntities(int numberOfObjects) throws Exception {
-        System.out.println(imageWidth);
-        System.out.println(imageHeight);
         for (int i = 0; i < numberOfObjects; i++) {
             new Entity(Tools.generateRandomNumberInRange(0, canvasWidth - imageWidth),
                     Tools.generateRandomNumberInRange(0, canvasHeight - imageHeight),
@@ -50,12 +48,26 @@ public class MovingObjectsPanel extends JPanel implements ActionListener {
         // Clear the panel
         g.setColor(Color.WHITE);
         g.fillRect(0, 0, getWidth(), getHeight());
-
-        for (Entity entity : EntityPool.getInstance().getEntities()) {
+        final EntityPool pool = EntityPool.getInstance();
+        for (Entity entity : pool.getEntities()) {
             if (entity == null) {
                 break;
             }
-            g.drawImage(entity.image, entity.getCoordinateX(), entity.getCoordinateY(), this);
+            g.drawImage(entity.getImage(), entity.getCoordinateX(), entity.getCoordinateY(), this);
+        }
+
+        if(pool.checkVictoryCondition()){
+            FontMetrics fontMetrics = g.getFontMetrics();
+
+            // Calculate the x-coordinate to center the text
+            String textToWrite = pool.getEntities().get(0).getTypeOfObject().toString().toUpperCase() + " has won!";
+            int textX = (canvasWidth - fontMetrics.stringWidth(textToWrite)) / 2;
+            int textY = (canvasHeight - fontMetrics.getHeight()) / 2 + fontMetrics.getAscent();
+
+            g.setColor(Color.BLACK);
+            g.setFont(new Font("Arial", Font.PLAIN, 30));
+
+            g.drawString(textToWrite, textX, textY);
         }
     }
 

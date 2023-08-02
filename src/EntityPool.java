@@ -10,7 +10,21 @@ public class EntityPool {
     private final List<Entity> entities;
 
     private EntityPool() {
-        entities = new ArrayList<Entity>();
+        entities = new ArrayList<>();
+    }
+
+    public boolean checkVictoryCondition(){
+        final EntityPool pool = EntityPool.getInstance();
+        final int entitiesSize = pool.getEntities().size();
+        for (int i = 0; i < entitiesSize + 1; i++){
+            if (i == entitiesSize){
+                break;
+            }
+            if(pool.getEntities().get(i).getTypeOfObject() != pool.getEntities().get(++i).getTypeOfObject()){
+                return false;
+            }
+        }
+        return true;
     }
 
     public static EntityPool getInstance() {
